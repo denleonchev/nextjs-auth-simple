@@ -1,7 +1,7 @@
 'use server';
 
-import { createAuthSession } from '@/lib/auth';
-import { hashUserPassword } from '@/lib/hash';
+import { createAuthSession, destroySession } from '@/lib/auth';
+import { hashUserPassword, verifyPassword } from '@/lib/hash';
 import { createuser, getUserByEmail } from '@/lib/user';
 import { redirect } from 'next/navigation';
 
@@ -45,10 +45,8 @@ export async function login(prevState, formData) {
     };
   }
 
-  const hashedPassword = hashUserPassword(password);
-
-  if (hashedPassword === existingUser.password) {
-    createAuthSession(userId);
+  if (verifyPassword(existingUser.password, password)) {
+    createAuthSession(existingUser.id);
     redirect('/training');  
   } else {
     return {
@@ -60,3 +58,7 @@ export async function login(prevState, formData) {
 
 }
 
+export async function logout() {
+  await destroySession();
+  redirect('/');
+}
